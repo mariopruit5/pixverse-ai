@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PixVerse Video Generator</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; background: #f4f4f4; }
+    .container { max-width: 600px; margin: auto; background: white; padding: 20px; border-radius: 10px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); }
+    textarea, select, input, button { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: 1px solid #ccc; }
+    button { background: #28a745; color: white; font-size: 16px; cursor: pointer; }
+    button:hover { background: #218838; }
+    video { width: 100%; margin-top: 20px; display: none; border-radius: 8px; }
+    #status { text-align: center; margin-top: 10px; font-weight: bold; }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h2>PixVerse Video Generator</h2>
+    <textarea id="prompt" placeholder="Enter your prompt..."></textarea>
+    <select id="aspect">
+      <option value="512x512">1:1</option>
+      <option value="768x512">3:2</option>
+      <option value="512x768">2:3</option>
+    </select>
+    <select id="style">
+      <option value="cinematic">Cinematic</option>
+      <option value="anime">Anime</option>
+      <option value="realistic">Realistic</option>
+    </select>
+    <button onclick="generateVideo()">Generate Video</button>
+    <div id="status"></div>
+    <video id="resultVideo" controls></video>
+  </div>
+  <script>
+    async function generateVideo() {
+      const prompt = document.getElementById("prompt").value;
+      const aspect = document.getElementById("aspect").value;
+      const style = document.getElementById("style").value;
+      const status = document.getElementById("status");
+      const video = document.getElementById("resultVideo");
+
+      status.textContent = "Generating video...";
+      status.style.color = "black";
+      video.style.display = "none";
+
+      try {
+        const res = await fetch("/.netlify/functions/generate-video", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ prompt, aspect, style })
+        });
+
+        const result = await res.json();
+
+        if (result.video_url) {
+          video.src = result.video_url;
+          video.style.display = "block";
+          status.textContent = "Video generated!";
+          status.style.color = "green";
+        } else {
+          status.textContent = "Error: " + (result.error || "Unknown error");
+          status.style.color = "red";
+        }
+      } catch (err) {
+        status.textContent = "Request failed: " + err.message;
+        status.style.color = "red";
+      }
+    }
+  </script>
+</body>
+</html>

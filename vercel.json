@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/.netlify/functions/generate-video", "destination": "/api/generate-video" }
+  ]
+}
